@@ -18,7 +18,7 @@ interface TaskFormValues {
   progress: number;
   startDate: Date;
   endDate: Date;
-  teamMembers: { value: string; role: string }[];
+  teamMembers: any;
   notes: { value: string }[];
   feedbacks: { value: string }[];
   meetings: Date;

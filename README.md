@@ -16,6 +16,11 @@ To get started with this project:
    ```
 4. Open your browser and navigate to `http://localhost:5173`
 
+## Live Demo
+
+The application is deployed on Vercel and can be accessed at:  
+[ascent-tech-hub.vercel.app](https://ascent-tech-hub.vercel.app)
+
 ## Challenges and Solutions
 
 1. **Real-time Data Synchronization**:
