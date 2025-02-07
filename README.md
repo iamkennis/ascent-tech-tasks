@@ -50,9 +50,10 @@ To get started with this project:
    - Added loading states and error handling for better user experience
 
 3.  **Todo Management**:
-   - Implemented full CRUD functionality for todos
+ - Implemented full CRUD functionality for todos
    - Created a priority system for tasks
    - Added team lead assignment functionality for task delegation
+   - Implemented search functionality to filter tasks by taskName
 
 4.  **User Authentication**:
    - Implemented secure signup with email and password

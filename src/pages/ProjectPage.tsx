@@ -4,17 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OngoingTaskCard } from "@/components/ongoing-card";
 import { CompleteTaskCard } from "@/components/complete-card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { tasksCollection } from "@/services/firebase";
 import { getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 export default function ProjectPage() {
   const navigate = useNavigate();
-  const [allTasks, setAllTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [allTasks, setAllTasks] = useState<any>([]);
+  const [filteredTasks, setFilteredTasks] = useState<any>([]);
+  const [loading, setLoading] = useState(false);
+  
+  
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
 
-  const fetchAllTasks = async (): Promise<any> => {
+  
+  const fetchAllTasks = async (): Promise<void> => {
     try {
       setLoading(true);
       const querySnapshot = await getDocs(tasksCollection);
@@ -24,17 +30,44 @@ export default function ProjectPage() {
       }));
       setAllTasks(tasks);
       setLoading(false);
-      return tasks;
     } catch (error) {
       console.error("Error fetching tasks:", error);
       setLoading(false);
-      return [];
     }
   };
-
   useEffect(() => {
     fetchAllTasks();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredTasks(allTasks);
+    } else {
+      const filtered = allTasks?.filter((task:any) =>
+        task?.taskName.toLowerCase()?.includes(searchQuery.toLowerCase())
+       
+      );
+      setFilteredTasks(filtered);
+    }
+  }, [searchQuery, allTasks]);
+
+  const filteredTodoTasks = allTasks?.filter((task: any) =>
+    task.statistics === "Todo" &&
+    (!searchQuery ||
+      task.taskName?.toLowerCase()?.includes(searchQuery.toLowerCase()))
+  );
+  
+  const filteredOngoingTasks = allTasks?.filter((task: any) =>
+    task.statistics === "Ongoing" &&
+    (!searchQuery ||
+      task.taskName?.toLowerCase()?.includes(searchQuery.toLowerCase()))
+  );
+  
+  const filteredCompleteTasks = allTasks?.filter((task: any) =>
+    task.statistics === "Complete" &&
+    (!searchQuery ||
+      task.taskName?.toLowerCase()?.includes(searchQuery.toLowerCase()))
+  );
 
   if (loading) {
     return <div>Loading task...</div>;
@@ -75,38 +108,40 @@ export default function ProjectPage() {
         </TabsList>
 
         <TabsContent value="todo" className="mt-6">
-          {allTasks.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {allTasks
-                .filter((task) => task.statistics === "Todo")
-                .map((task, i) => (
-                  <TaskCard key={i} {...task} />
-                ))}
-            </div>
-          ) : (
-            <div>No tasks found.</div>
-          )}
-        </TabsContent>
-        <TabsContent value="ongoing">
-          <TabsContent value="ongoing" className="mt-6">
-            <div className="grid gap-4 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {allTasks
-                .filter((task) => task.statistics === "Ongoing")
-                .map((task, i) => (
-                  <OngoingTaskCard key={i} {...task} />
-                ))}
-            </div>
-          </TabsContent>
-        </TabsContent>
-        <TabsContent value="complete" className="mt-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {allTasks
-              .filter((task) => task.statistics === "Complete")
-              .map((task, i) => (
-                <CompleteTaskCard key={i} {...task} />
-              ))}
-          </div>
-        </TabsContent>
+      {filteredTodoTasks.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredTodoTasks.map((task: any, i: number) => (
+            <TaskCard key={i} {...task} />
+          ))}
+        </div>
+      ) : (
+        <div>No tasks found.</div>
+      )}
+    </TabsContent>
+
+    <TabsContent value="ongoing" className="mt-6">
+      {filteredOngoingTasks.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredOngoingTasks.map((task: any, i: number) => (
+            <OngoingTaskCard key={i} {...task} />
+          ))}
+        </div>
+      ) : (
+        <div>No tasks found.</div>
+      )}
+    </TabsContent>
+
+    <TabsContent value="complete" className="mt-6">
+      {filteredCompleteTasks.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredCompleteTasks.map((task: any, i: number) => (
+            <CompleteTaskCard key={i} {...task} />
+          ))}
+        </div>
+      ) : (
+        <div>No tasks found.</div>
+      )}
+    </TabsContent>
       </Tabs>
     </main>
   );
